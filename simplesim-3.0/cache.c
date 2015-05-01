@@ -57,7 +57,7 @@
 #include "misc.h"
 #include "machine.h"
 #include "cache.h"
-
+int bypass=0;
 /* cache access macros */
 #define CACHE_TAG(cp, addr)	((addr) >> (cp)->tag_shift)
 #define CACHE_SET(cp, addr)	(((addr) >> (cp)->set_shift) & (cp)->set_mask)
@@ -381,6 +381,7 @@ cache_create(char *name,		/* name of the cache */
 	  blk->status = 0;
 	  blk->tag = 0;
 	  blk->ready = 0;
+    blk->bypassbuff=0;
 	  blk->user_data = (usize != 0
 			    ? (byte_t *)calloc(usize, sizeof(byte_t)) : NULL);
 
@@ -566,24 +567,58 @@ cache_access(struct cache_t *cp,	/* cache to access */
 
   /* **MISS** */
   cp->misses++;
-
+  
   /* select the appropriate block to replace, and re-link this entry to
      the appropriate place in the way list */
+   
   switch (cp->policy) {
-  case LRU:
+  case LRU:  
+   // printf("hello");
+    //break; 
   case FIFO:
+   // printf("wassup");
     repl = cp->sets[set].way_tail;
     update_way_list(&cp->sets[set], repl, Head);
     break;
+ 
   case Random:
     {
+     // printf("random");
       int bindex = myrand() & (cp->assoc - 1);
       repl = CACHE_BINDEX(cp, cp->sets[set].blks, bindex);
     }
     break;
+  
   default:
     panic("bogus replacement policy");
   }
+     // printf("%d",repl->bypassbuff);
+
+if(bypass==1)
+{
+  //printf("%d",blk->bypassbuff);
+  
+    if(repl->bypassbuff<3)
+       {
+            //printf("there");
+            repl->bypassbuff++;
+            lat += cp->blk_access_fn(Read, CACHE_BADDR(cp, addr), cp->bsize,
+                                    repl, now+lat);
+            bypass=0;
+            return lat;
+            
+        }
+        
+      else
+      {   //printf("great");
+          repl->bypassbuff=repl->blk_used*3;
+          repl->blk_used=0;
+          bypass=0;
+      }
+    
+   
+    //goto bypass_do;
+}
 
   /* remove this block from the hash bucket chain, if hash exists */
   if (cp->hsize)
@@ -650,6 +685,8 @@ cache_access(struct cache_t *cp,	/* cache to access */
     link_htab_ent(cp, &cp->sets[set], repl);
 
   /* return latency of the operation */
+//bypass_do:
+  //bypass=0;
   return lat;
 
 

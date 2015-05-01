@@ -59,7 +59,7 @@
 #include "machine.h"
 #include "memory.h"
 #include "stats.h"
-
+extern int bypass;
 /*
  * This module contains code to implement various cache-like structures.  The
  * user instantiates caches using cache_new().  When instantiated, the user
@@ -131,6 +131,7 @@ struct cache_blk_t
   byte_t data[1];		/* actual data block starts here, block size
 				   should probably be a multiple of 8 */
   int blk_used;
+  int bypassbuff;
 };
 
 /* cache set definition (one or more blocks sharing the same set index) */

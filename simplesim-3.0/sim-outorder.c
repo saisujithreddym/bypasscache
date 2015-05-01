@@ -481,6 +481,7 @@ dl1_access_fn(enum mem_cmd cmd,		/* access cmd, Read or Write */
     }
 }
 
+
 /* l2 data cache block miss handler function */
 static unsigned int			/* latency of block access */
 dl2_access_fn(enum mem_cmd cmd,		/* access cmd, Read or Write */
@@ -492,6 +493,8 @@ dl2_access_fn(enum mem_cmd cmd,		/* access cmd, Read or Write */
   unsigned int lat;
   if(cache_dl3){
       /* access next level of data cache hierarchy */
+      bypass=1;
+      //printf("%d",bypass);
       lat = cache_access(cache_dl3, cmd, baddr, NULL, bsize,
                          /* now */now, /* pudata */NULL, /* repl addr */NULL);
       if (cmd == Read)
@@ -522,10 +525,26 @@ dl3_access_fn(enum mem_cmd cmd,		/* access cmd, Read or Write */
           int bsize,		/* size of block to access */
           struct cache_blk_t *blk,	/* ptr to block in upper level */
           tick_t now)		/* time of access */
-{
+{  
+  unsigned int lat;
   /* this is a miss to the lowest level, so access main memory */
   if (cmd == Read)
-    {
+   {
+     
+ /*     if(blk->bypassbuff<3)
+        {
+            blk->bypassbuff++;   
+            
+        }
+        
+      else
+      {
+          blk->bypassbuff=blk->blk_used*3;
+          blk->blk_used=0;
+      }
+      
+      printf("%d",blk->blk_used);
+  */    
       return mem_access_latency(bsize);
     }
   else
