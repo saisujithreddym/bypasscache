@@ -3,3 +3,5 @@ int the near feature.
 
 This decreases the miss rate as the blocks which will not be accessed in the near feature are not cached and hence valuable 
 place is provided for more frequently used cache blocks.
+
+
