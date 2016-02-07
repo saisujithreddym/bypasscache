@@ -5,3 +5,4 @@ This decreases the miss rate as the blocks which will not be accessed in the nea
 place is provided for more frequently used cache blocks.
 
 
+svcz 
